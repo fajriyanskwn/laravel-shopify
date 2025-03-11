@@ -36,16 +36,40 @@
         <input type="hidden" name="price" id="price" value="">
         <input type="hidden" name="stock" id="stock" value="">
 
-        <div class="flex gap-5 mt-5 items-end">
+        <div class="flex  mt-5 items-end">
             <div class="">
                 <label for="quantity" class="block mt-3">Quantity:</label>
-                <input type="number" name="quantity" id="quantity" value="1" min="1" class="border p-2" disabled>
+                <input type="number" name="quantity" id="quantity" value="1" min="1" class="border p-2 w-[50px] mt-2" disabled>
             </div>
             
             <!-- Add to Cart Button -->
-            <button onclick="addToCart()" id="addToCartBtn" class="px-4 py-2 bg-blue-500 text-white rounded mt-3 opacity-50" disabled>
+            <button onclick="addToCart()" id="addToCartBtn" class="px-4 py-2 bg-red-800 cursor-pointer hover:bg-red-900 text-white mt-3 opacity-50" disabled>
                 Add to Cart
             </button>
+        </div>
+
+        <div class="space-y-4 mt-10" x-data="{ open: 0 }">
+            <!-- FAQ 1 -->
+            <div class="border-b border-gray-300">
+                <button @click="open === 1 ? open = null : open = 1" class="w-full flex justify-between items-center py-3 text-left border-b">
+                    <span class="font-semibold text-gray-700">Specifications</span>
+                    <span x-show="open !== 1">+</span>
+                    <span x-show="open === 1">-</span>
+                </button>
+                <div x-show="open === 1" x-collapse class="text-gray-600 py-3">
+                    <h3 class="text-lg font-semibold">Specifications</h3>
+                    <ul class="list-disc pl-5">
+                        @foreach ($product['options'] as $option)
+                            <li><strong>{{ $option['name'] }}:</strong> 
+                                @foreach ($option['values'] as $value)
+                                    {{ $value }}@if (!$loop->last), @endif
+                                @endforeach
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+            
         </div>
     </div>
 </div>
