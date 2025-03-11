@@ -31,7 +31,10 @@
        </script>
       
 </head>
-<nav class="container mx-auto h-[80px] border-b flex justify-center items-center gap-4">
-   <a href="/produk" class="bg-blue-700 text-white px-4 py-1.5 rounded-md">produk</a>
-   <a href="/cart" class="bg-blue-700 text-white px-4 py-1.5 rounded-md">cart</a>
+<nav class=" bg-black">
+   <div class="container mx-auto h-[80px] border-b flex justify-center items-center gap-4">
+      <a href="/" class="bg-red-800 text-white px-4 py-1.5">home</a>
+      <a href="/produk" class="bg-red-800 text-white px-4 py-1.5">produk</a>
+      <a href="/cart" class="bg-red-800 text-white px-4 py-1.5">cart</a>
+   </div>
 </nav>

@@ -1,6 +1,6 @@
 <x-head/>
-<body class="container mx-auto">
-    <div class="p-6 bg-gray-100 rounded-lg shadow-md">
+<div class="container mx-auto">
+    <div class="p-6 rounded-lg shadow-md">
         <h1 class="text-2xl font-bold mb-5">Shopping Cart</h1>
     
         <div class="mt-6 grid grid-cols-4 gap-4">
@@ -8,8 +8,8 @@
             <div class="p-4 bg-white rounded-lg shadow">
                 <img src="{{ $product['images'][0]['src'] }}" alt="{{ $product['title'] }}" class="w-full h-[300px] object-cover rounded-lg">
                 <h2 class="text-xl font-semibold text-gray-900 mt-4">{{ $product['title'] }}</h2>
-                <p class="text-gray-600">{!! $product['body_html'] !!}</p>
-                <a href="/produk/{{ $product['id'] }}" class="px-3 py-2 bg-blue-700 text-white mt-3 block w-max">View Product</a>
+                <div class="text-gray-600 line-clamp-3">{!! $product['body_html'] !!}</div>
+                <a href="/produk/{{ $product['id'] }}" class="px-3 py-2 bg-red-700 text-white mt-3 block w-max">View Product</a>
 
                 {{-- <button 
                     onclick="addToCart({{ $product['variants'][0]['id'] }}, '{{ $product['title'] }}', '{{ $product['images'][0]['src'] }}')" 
@@ -46,5 +46,5 @@
           });
       }
    </script>
-</body>
+</div>
 </html>
