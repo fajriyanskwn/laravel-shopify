@@ -45,16 +45,68 @@
            </tbody>
        </table>
 
+        <div id="checkout-message" class="mt-3 text-red-500 font-semibold"></div>
+        <ul id="checkout-error-list" class="mt-3 text-red-500 font-semibold list-disc list-inside"></ul>
+        <div id="loading" class="mt-3 text-blue-500 font-semibold hidden">Checking stock...</div>
+
+
+
        <div class="mt-5">
-           <form action="{{ route('cart.checkout') }}" method="POST">
-               @csrf
-               <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-red-700">Proceed to Checkout</button>
-           </form>
+        <button onclick="proceedToCheckout()" class="px-6 py-3   bg-red-800 text-white cursor-pointer hover:bg-red-700">
+            Checkout
+        </button>
+    </div>
+    
+
+       
+       <div class="mt-5 hidden">
+        <form id="checkout-form" action="{{ route('cart.checkout') }}" method="POST">
+            @csrf
+            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer hover:bg-red-700">
+                Proceed to Checkout
+            </button>
+        </form>        
        </div>
    @else
        <p>Your cart is empty.</p>
    @endif
 </div>
+
+<script>
+    function proceedToCheckout() {
+        let messageElement = document.getElementById("checkout-message");
+        let loadingElement = document.getElementById("loading");
+        let checkoutForm = document.getElementById("checkout-form");
+
+        // Reset pesan & tampilkan loading
+        messageElement.innerText = "";
+        loadingElement.classList.remove("hidden");
+
+        fetch("{{ route('cart.checkStock') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingElement.classList.add("hidden"); // Sembunyikan loading
+
+            if (data.success) {
+                checkoutForm.submit();
+            } else {
+                messageElement.innerText = data.message; // Tampilkan pesan error
+            }
+        })
+        .catch(error => {
+            loadingElement.classList.add("hidden");
+            messageElement.innerText = "Terjadi kesalahan dalam proses pengecekan stok.";
+        });
+    }
+</script>
+
+
 <script>
     function updateQuantity(variantId, change) {
     let quantityElement = document.getElementById(`quantity-${variantId}`);

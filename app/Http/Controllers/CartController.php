@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
@@ -95,6 +96,9 @@ class CartController extends Controller
 
         return back()->with('success', 'Product removed from cart');
     }
+
+
+
     public function checkout()
     {
         $cart = Session::get('cart', []);
@@ -116,5 +120,47 @@ class CartController extends Controller
 
         return redirect(rtrim($checkout_url, ','));
     }
+
+
+
+    public function checkStockBeforeCheckout(Request $request)
+{
+    \Log::info('Checking stock for checkout');
+
+    $cart = session('cart', []);
+    $store_name = 'qkqarf-pc';
+    $api_version = '2024-01';
+    $access_token = env('SHOPIFYACCESSTOKEN');
+
+    foreach ($cart as $item) {
+        $variantId = $item['variant_id'];
+        $requestedQuantity = $item['quantity'];
+
+        $url = "https://$store_name.myshopify.com/admin/api/$api_version/variants/$variantId.json";
+
+        $response = Http::withHeaders([
+            'X-Shopify-Access-Token' => $access_token,
+            'Content-Type' => 'application/json',
+        ])->get($url);
+
+        if ($response->failed()) {
+            \Log::error('Failed to fetch stock from Shopify', ['variant_id' => $variantId]);
+            return response()->json(['success' => false, 'message' => 'Gagal mengambil stok dari Shopify'], 500);
+        }
+
+        $shopifyData = $response->json();
+        $availableStock = $shopifyData['variant']['inventory_quantity'] ?? 0;
+
+        if ($requestedQuantity > $availableStock) {
+            return response()->json([
+                'success' => false,
+                'message' => "Stok untuk {$item['title']} hanya tersedia $availableStock."
+            ]);
+        }
+    }
+
+    return response()->json(['success' => true]);
+}
+
 
 }
