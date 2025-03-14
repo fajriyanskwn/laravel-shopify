@@ -1,7 +1,8 @@
 
 <x-head/>
 <div class="container mx-auto mt-10">
-   <h1 class="text-2xl font-bold mb-5">Shopping Cart</h1>
+   <h1 class="text-2xl font-bold">Keranjang Belanja Anda</h1>
+   <div class="mt-2 pb-7 text-xs">Lupakan tabungan anda, belanja sebanyak banyaknya sekarang juga.</div>
 
    @if(session('success'))
        <div class="bg-green-100 p-3 text-green-700 mb-4">{{ session('success') }}</div>
@@ -11,33 +12,37 @@
        <table class="w-full border-collapse border border-gray-300">
            <thead>
                <tr class="bg-gray-200">
-                   <th class="p-3 border">img</th>
-                   <th class="p-3 border">title</th>
-                   <th class="p-3 border">Variant ID</th>
-                   <th class="p-3 border">Quantity</th>
-                   <th class="p-3 border">Actions</th>
+                   <th class="p-3 border w-[230px]">Gambar</th>
+                   <th class="p-3 border">Nama Produk</th>
+                   <th class="p-3 border hidden">Variant ID</th>
+                   <th class="p-3 border w-[100px]">Jumlah</th>
+                   <th class="p-3 border w-[100px]">Aksi</th>
                </tr>
            </thead>
            <tbody>
                @foreach($cart as $item)
                    <tr class="border">
-                       <td class="p-3 border"><img src="{{ $item['img'] }}" alt="" class="w-16 h-16"></td>
+                       <td class="p-2 border"><img src="{{ $item['img'] }}" alt="" class="w-full h-[200px] object-cover"></td>
                        <td class="p-3 border">{{ $item['title'] }}</td>
-                       <td class="p-3 border">{{ $item['variant_id'] }}</td>
-                       <td class="p-3 border flex items-center justify-center space-x-2">
-                           <button 
+                       <td class="p-3 border hidden">{{ $item['variant_id'] }}</td>
+                       <td class="p-3 text-center">
+                           {{-- <button 
                                onclick="updateQuantity({{ $item['variant_id'] }}, -1)" 
-                               class="px-2 py-1 bg-gray-300 text-black rounded">−</button>
+                               class="px-2 py-1 bg-gray-300 text-black rounded">−</button> --}}
                            <span id="quantity-{{ $item['variant_id'] }}">{{ $item['quantity'] }}</span>
-                           <button 
+                           {{-- <button 
                                onclick="updateQuantity({{ $item['variant_id'] }}, 1)" 
-                               class="px-2 py-1 bg-gray-300 text-black rounded">+</button>
+                               class="px-2 py-1 bg-gray-300 text-black rounded">+</button> --}}
                        </td>
                        <td class="p-3 border">
-                           <form action="{{ route('cart.remove') }}" method="POST" class="inline">
+                           <form action="{{ route('cart.remove') }}" method="POST" class="w-full flex justify-center">
                                @csrf
                                <input type="hidden" name="variant_id" value="{{ $item['variant_id'] }}">
-                               <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded">Remove</button>
+                               <button type="submit" class="px-3 py-3 bg-red-500 hover:bg-red-800 text-white cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                                    <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
+                                  </svg>
+                               </button>
                            </form>
                        </td>
                    </tr>

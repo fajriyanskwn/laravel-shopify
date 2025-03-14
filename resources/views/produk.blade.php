@@ -1,14 +1,14 @@
 <x-head/>
-<div class="container mx-auto">
-    <div class="p-6 rounded-lg shadow-md">
-        <h1 class="text-2xl font-bold mb-5">Shopping Cart</h1>
+<div class="bg-black h-screen">
+    <div class="pt-10 container mx-auto">
+        <h1 class="text-2xl font-bold text-white">Daftar Produk Kami</h1>
+        <div class="mt-2 pb-7 text-xs text-white">Lupakan tabungan anda, belanja sebanyak banyaknya sekarang juga.</div>
     
-        <div class="mt-6 grid grid-cols-4 gap-4">
+        <div class="pt-6 grid grid-cols-4 gap-4">
             @foreach($products as $product)
-            <div class="p-4 bg-white rounded-lg shadow">
-                <img src="{{ $product['images'][0]['src'] }}" alt="{{ $product['title'] }}" class="w-full h-[300px] object-cover rounded-lg">
+            <div class="p-4 bg-white border border-slate-400">
+                <img src="{{ $product['images'][0]['src'] }}" alt="{{ $product['title'] }}" class="w-full bg-slate-600 h-[300px] object-cover">
                 <h2 class="text-xl font-semibold text-gray-900 mt-4">{{ $product['title'] }}</h2>
-                <div class="text-gray-600 line-clamp-3">{!! $product['body_html'] !!}</div>
                 <a href="/produk/{{ $product['id'] }}" class="px-3 py-2 bg-red-700 text-white mt-3 block w-max">View Product</a>
 
                 {{-- <button 

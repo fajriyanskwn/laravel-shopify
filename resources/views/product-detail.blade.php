@@ -47,6 +47,7 @@
                 Add to Cart
             </button>
         </div>
+        <p id="quantityError" class=""></p>
 
         <div class="space-y-4 mt-10" x-data="{ open: 0 }">
             <!-- FAQ 1 -->
@@ -78,55 +79,10 @@
     let productVariants = @json($product['variants']);
     let selectedOptions = {};
 
-    // function getVariantCount() {
-    //     let count = 0;
-    //     if (productVariants.some(v => v.option1)) count++;
-    //     if (productVariants.some(v => v.option2)) count++;
-    //     if (productVariants.some(v => v.option3)) count++;
-    //     return count;
-    // }
     function getVariantCount() {
         return @json(count($product['options']));
     }
 
-    // function renderVariantSelectors() {
-    // let container = document.getElementById('variantSelections');
-    // container.innerHTML = '';
-
-    // let variantNames = ['option1', 'option2', 'option3'].filter(option => 
-    //     productVariants.some(v => v[option] !== null)
-    // );
-
-    // let optionNames = @json(collect($product['options'])->pluck('name'));
-
-    // variantNames.forEach((variantName, index) => {
-    //     let availableOptions = [...new Set(productVariants.map(v => v[variantName]).filter(o => o))];
-
-    //     let html = `
-    //         <h3 class="mt-5 text-lg font-semibold">${optionNames[index]}:</h3>
-    //         <div class="flex gap-2 mt-2" id="variant_${index}">
-    //             ${availableOptions.map(option => {
-    //                 let isAvailable = productVariants.some(v => v[variantName] === option && v.inventory_quantity > 0);
-    //                 let disabledClass = isAvailable ? 'cursor-pointer bg-gray-200 hover:bg-gray-300' : 'bg-gray-400 cursor-not-allowed opacity-50';
-                    
-    //                 return `
-    //                     <label class="variant-label px-4 py-2 rounded transition ${disabledClass}"
-    //                            onclick="selectVariant(${index}, '${option}')"
-    //                            data-variant-index="${index}" data-option="${option}"
-    //                            ${isAvailable ? '' : 'disabled'}>
-    //                         <input type="radio" name="variant_${index}" value="${option}" class="hidden">
-    //                         ${option}
-    //                     </label>
-    //                 `;
-    //             }).join('')}
-    //         </div>
-    //     `;
-
-    //     container.innerHTML += html;
-    // });
-
-    //     checkIfAllVariantsSelected();
-    // }
     function renderVariantSelectors() {
         let container = document.getElementById('variantSelections');
         container.innerHTML = '';
@@ -245,42 +201,69 @@
         }
     }
 
+
+
+
     function addToCart() {
-        let variantId = document.getElementById('variant_id').value;
-        let variantTitle = document.getElementById('variant_title').value;
-        let titles = document.getElementById('justtitle').value;
-        let img = document.getElementById('imageproduct').src;
-        let quantity = document.getElementById('quantity').value;
+    let variantId = document.getElementById('variant_id').value;
+    let variantTitle = document.getElementById('variant_title').value;
+    let titles = document.getElementById('justtitle').value;
+    let img = document.getElementById('imageproduct').src;
+    let quantityInput = document.getElementById('quantity');
+    let quantity = parseInt(quantityInput.value);
+    let stock = parseInt(document.getElementById('stock').value); 
+    let quantityError = document.getElementById('quantityError');
 
-        if (!variantId) {
-            alert('Please select a variant before adding to cart.');
-            return;
-        }
+    // Reset error message
+    quantityError.textContent = '';
 
-        fetch('/cart/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({
-                variant_id: variantId,
-                title: titles + ' - ' + variantTitle,
-                image: img,
-                quantity: quantity
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message === 'Added to cart') {
-                alert('Item added to cart successfully!');
-                console.log('Updated Cart:', data.cart);
-            } else {
-                alert('Failed to add to cart.');
-            }
-        })
-        .catch(error => console.error('Error:', error));
+    if (!variantId) {
+        quantityError.textContent = 'Please select a variant before adding to cart.';
+        return;
     }
 
+    if (isNaN(quantity) || quantity <= 0) {
+        quantityError.textContent = 'Please enter a valid quantity.';
+        return;
+    }
+
+    if (quantity > stock) {
+        quantityError.classList = 'text-red-600 text-sm mt-3';
+        quantityError.textContent = `Out of stock! Available stock: ${stock}`;
+        return;
+    }
+
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            variant_id: variantId,
+            title: titles + ' - ' + variantTitle,
+            image: img,
+            quantity: quantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message === 'Added to cart') {
+            quantityError.textContent = ''; // Hapus error jika berhasil
+            alert('Item added to cart successfully!');
+            console.log('Updated Cart:', data.cart);
+        } else {
+            quantityError.classList = 'text-green-600 text-sm mt-3';
+            quantityError.textContent = 'Success add to cart.';
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+
+
+
+    
     renderVariantSelectors();
 </script>
