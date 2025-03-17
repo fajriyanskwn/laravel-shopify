@@ -15,7 +15,7 @@
                    <th class="p-3 border w-[230px]">Gambar</th>
                    <th class="p-3 border">Nama Produk</th>
                    <th class="p-3 border hidden">Variant ID</th>
-                   <th class="p-3 border w-[100px]">Jumlah</th>
+                   <th class="p-3 border w-[140px]">Jumlah</th>
                    <th class="p-3 border w-[100px]">Aksi</th>
                </tr>
            </thead>
@@ -25,15 +25,33 @@
                        <td class="p-2 border"><img src="{{ $item['img'] }}" alt="" class="w-full h-[200px] object-cover"></td>
                        <td class="p-3 border">{{ $item['title'] }}</td>
                        <td class="p-3 border hidden">{{ $item['variant_id'] }}</td>
-                       <td class="p-3 text-center">
-                           {{-- <button 
+                       {{-- <td class="p-3 text-center">
+                           <button 
                                onclick="updateQuantity({{ $item['variant_id'] }}, -1)" 
-                               class="px-2 py-1 bg-gray-300 text-black rounded">−</button> --}}
+                               class="px-2 py-1 bg-gray-300 text-black rounded">−</button>
                            <span id="quantity-{{ $item['variant_id'] }}">{{ $item['quantity'] }}</span>
-                           {{-- <button 
+                           <button 
                                onclick="updateQuantity({{ $item['variant_id'] }}, 1)" 
-                               class="px-2 py-1 bg-gray-300 text-black rounded">+</button> --}}
-                       </td>
+                               class="px-2 py-1 bg-gray-300 text-black rounded">+</button>
+                       </td> --}}
+
+                       
+                       <td class="p-3 text-center">
+                        <button 
+                            id="minus-btn-{{ $item['variant_id'] }}"
+                            onclick="updateQuantity({{ $item['variant_id'] }}, -1)" 
+                            class="px-2 py-1 bg-gray-300 text-black rounded">−</button>
+                        
+                        <span id="quantity-{{ $item['variant_id'] }}">{{ $item['quantity'] }}</span>
+                        
+                        <button 
+                            id="plus-btn-{{ $item['variant_id'] }}"
+                            onclick="updateQuantity({{ $item['variant_id'] }}, 1)" 
+                            class="px-2 py-1 bg-gray-300 text-black rounded">+</button>
+                    
+                        <div id="stock-msg-{{ $item['variant_id'] }}" class="text-red-500 text-xs mt-1"></div>
+                    </td>                    
+                    
                        <td class="p-3 border">
                            <form action="{{ route('cart.remove') }}" method="POST" class="w-full flex justify-center">
                                @csrf
@@ -113,13 +131,158 @@
 
 
 <script>
-    function updateQuantity(variantId, change) {
+//     function updateQuantity(variantId, change) {
+//     let quantityElement = document.getElementById(`quantity-${variantId}`);
+//     let newQuantity = parseInt(quantityElement.innerText) + change;
+
+//     if (newQuantity < 1) return; // Jangan izinkan quantity lebih kecil dari 1
+
+//     fetch("{{ route('cart.update') }}", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+//         },
+//         body: JSON.stringify({
+//             variant_id: variantId,
+//             quantity: newQuantity
+//         })
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             quantityElement.innerText = newQuantity; // Update tampilannya
+//         }
+//     })
+//     .catch(error => {
+//         console.error("Error:", error);
+//     });
+// }
+
+// function updateQuantity(variantId, change) {
+//     let quantityElement = document.getElementById(`quantity-${variantId}`);
+//     let plusButton = document.getElementById(`plus-btn-${variantId}`);
+//     let stockMessage = document.getElementById(`stock-msg-${variantId}`);
+//     let newQuantity = parseInt(quantityElement.innerText) + change;
+
+//     if (newQuantity < 1) return; // Jangan izinkan quantity lebih kecil dari 1
+
+//     fetch("{{ route('cart.checkStockCart') }}", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+//         },
+//         body: JSON.stringify({
+//             variant_id: variantId,
+//             quantity: newQuantity
+//         })
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             quantityElement.innerText = newQuantity; // Update tampilan quantity
+
+//             // Jika stok mencukupi, pastikan tombol + tetap bisa ditekan
+//             plusButton.disabled = false;
+//             stockMessage.innerText = "";
+//         } else {
+//             // Jika stok tidak cukup, tampilkan pesan dan disable tombol +
+//             stockMessage.innerText = data.message;
+//             plusButton.disabled = true;
+//         }
+//     })
+//     .catch(error => {
+//         console.error("Error:", error);
+//     });
+// }
+
+
+
+// -------------------
+// function updateQuantity(variantId, change) {
+//     let quantityElement = document.getElementById(`quantity-${variantId}`);
+//     let plusButton = document.getElementById(`plus-btn-${variantId}`);
+//     let stockMessage = document.getElementById(`stock-msg-${variantId}`);
+//     let currentQuantity = parseInt(quantityElement.innerText);
+//     let newQuantity = currentQuantity + change;
+
+//     if (newQuantity < 1) return; // Jangan izinkan kurang dari 1
+
+//     // Cek stok sebelum mengubah tampilan
+//     fetch("{{ route('cart.checkStockCart') }}", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json",
+//             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+//         },
+//         body: JSON.stringify({
+//             variant_id: variantId,
+//             quantity: newQuantity
+//         })
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             // Jika stok cukup, baru perbarui UI dan kirim ke backend
+//             fetch("{{ route('cart.update') }}", {
+//                 method: "POST",
+//                 headers: {
+//                     "Content-Type": "application/json",
+//                     "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+//                 },
+//                 body: JSON.stringify({
+//                     variant_id: variantId,
+//                     quantity: newQuantity
+//                 })
+//             })
+//             .then(response => response.json())
+//             .then(updateData => {
+//                 if (updateData.success) {
+//                     quantityElement.innerText = newQuantity; // Update tampilan
+//                     stockMessage.innerText = "";
+//                 }
+//             })
+//             .catch(error => {
+//                 console.error("Error updating cart:", error);
+//             });
+//         } else {
+//             // Jika stok tidak cukup, cegah perubahan UI dan tampilkan pesan error
+//             stockMessage.innerText = data.message;
+//         }
+//     })
+//     .catch(error => {
+//         console.error("Error checking stock:", error);
+//     });
+// }
+
+
+function updateQuantity(variantId, change) {
     let quantityElement = document.getElementById(`quantity-${variantId}`);
-    let newQuantity = parseInt(quantityElement.innerText) + change;
+    let plusButton = document.getElementById(`plus-btn-${variantId}`);
+    let minusButton = document.getElementById(`minus-btn-${variantId}`);
+    let stockMessage = document.getElementById(`stock-msg-${variantId}`);
 
-    if (newQuantity < 1) return; // Jangan izinkan quantity lebih kecil dari 1
+    // Debugging: Cek elemen yang tidak ditemukan
+    if (!quantityElement) console.error(`❌ Element not found: quantity-${variantId}`);
+    if (!plusButton) console.error(`❌ Element not found: plus-btn-${variantId}`);
+    if (!minusButton) console.error(`❌ Element not found: minus-btn-${variantId}`);
+    
+    // Jika salah satu elemen tidak ditemukan, hentikan fungsi
+    if (!quantityElement || !plusButton || !minusButton) return;
 
-    fetch("{{ route('cart.update') }}", {
+    let currentQuantity = parseInt(quantityElement.innerText);
+    let newQuantity = currentQuantity + change;
+
+    if (newQuantity < 1) return;
+
+    // Loading state: Nonaktifkan tombol saat request berlangsung
+    plusButton.disabled = true;
+    minusButton.disabled = true;
+    plusButton.innerHTML = "⏳";
+    minusButton.innerHTML = "⏳";
+
+    fetch("{{ route('cart.checkStockCart') }}", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -133,13 +296,46 @@
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            quantityElement.innerText = newQuantity; // Update tampilannya
+            fetch("{{ route('cart.update') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                },
+                body: JSON.stringify({
+                    variant_id: variantId,
+                    quantity: newQuantity
+                })
+            })
+            .then(response => response.json())
+            .then(updateData => {
+                if (updateData.success) {
+                    quantityElement.innerText = newQuantity;
+                    if (stockMessage) stockMessage.innerText = "";
+                }
+            })
+            .catch(error => console.error("❌ Error updating cart:", error));
+        } else {
+            if (stockMessage) stockMessage.innerText = data.message;
         }
     })
-    .catch(error => {
-        console.error("Error:", error);
+    .catch(error => console.error("❌ Error checking stock:", error))
+    .finally(() => {
+        // Kembalikan tombol ke kondisi normal setelah request selesai
+        if (plusButton) {
+            plusButton.disabled = false;
+            plusButton.innerHTML = "+";
+        }
+        if (minusButton) {
+            minusButton.disabled = false;
+            minusButton.innerHTML = "−";
+        }
     });
 }
+
+
+
+
 
 </script>
     

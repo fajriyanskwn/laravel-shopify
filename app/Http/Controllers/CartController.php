@@ -162,5 +162,39 @@ class CartController extends Controller
     return response()->json(['success' => true]);
 }
 
+public function checkStockCart(Request $request)
+{
+    $variantId = $request->variant_id;
+    $requestedQuantity = $request->quantity;
+    
+    $store_name = 'qkqarf-pc';
+    $api_version = '2024-01';
+    $access_token = env('SHOPIFYACCESSTOKEN');
+
+    $url = "https://$store_name.myshopify.com/admin/api/$api_version/variants/$variantId.json";
+
+    $response = Http::withHeaders([
+        'X-Shopify-Access-Token' => $access_token,
+        'Content-Type' => 'application/json',
+    ])->get($url);
+
+    if ($response->failed()) {
+        return response()->json(['success' => false, 'message' => 'Gagal mengambil stok dari Shopify'], 500);
+    }
+
+    $shopifyData = $response->json();
+    $availableStock = $shopifyData['variant']['inventory_quantity'] ?? 0;
+
+    if ($requestedQuantity > $availableStock) {
+        return response()->json([
+            'success' => false,
+            'message' => "Stok hanya tersedia $availableStock."
+        ]);
+    }
+
+    return response()->json(['success' => true]);
+}
+
+
 
 }
