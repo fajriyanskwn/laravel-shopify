@@ -4,7 +4,7 @@
         <h1 class="text-2xl font-bold text-white">Daftar Produk Kami</h1>
         <div class="mt-2 pb-7 text-xs text-white">Lupakan tabungan anda, belanja sebanyak banyaknya sekarang juga.</div>
     
-        <div class="pt-6 grid grid-cols-4 gap-4">
+        <div class="pt-6 grid lg:grid-cols-3 xl:grid-cols-4 gap-4">
             @foreach($products as $product)
             <div class="p-4 bg-white border border-slate-400">
                 <img src="{{ $product['images'][0]['src'] }}" alt="{{ $product['title'] }}" class="w-full bg-slate-600 h-[300px] object-cover">

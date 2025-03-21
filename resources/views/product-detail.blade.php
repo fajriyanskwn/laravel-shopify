@@ -1,4 +1,10 @@
  <x-head />
+<!-- Notyf CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf/notyf.min.css">
+<!-- Notyf JS -->
+<script src="https://cdn.jsdelivr.net/npm/notyf/notyf.min.js"></script>
+
+
 <div class="container mx-auto mt-10 mb-20 flex items-start gap-10">
     <div class="w-[35%]">
         @foreach ($product['images'] as $item)
@@ -70,7 +76,6 @@
                     </ul>
                 </div>
             </div>
-            
         </div>
     </div>
 </div>
@@ -78,7 +83,6 @@
 <script>
     let productVariants = @json($product['variants']);
     let selectedOptions = {};
-
     function getVariantCount() {
         return @json(count($product['options']));
     }
@@ -86,13 +90,10 @@
     function renderVariantSelectors() {
         let container = document.getElementById('variantSelections');
         container.innerHTML = '';
-
         let variantNames = @json(collect($product['options'])->pluck('name'));
-
         variantNames.forEach((optionName, index) => {
             let optionKey = `option${index + 1}`;
             let availableOptions = [...new Set(productVariants.map(v => v[optionKey]).filter(o => o))];
-
             let html = `
                 <h3 class="mt-5 text-lg font-semibold">${optionName}:</h3>
                 <div class="flex gap-2 mt-2" id="variant_${index}">
@@ -112,24 +113,18 @@
                     }).join('')}
                 </div>
             `;
-
             container.innerHTML += html;
         });
-
         checkIfAllVariantsSelected();
     }
 
 
     function selectVariant(index, option) {
         let optionElement = event.target.closest('.variant-label');
-
         if (optionElement.classList.contains('cursor-not-allowed')) return;
-
         selectedOptions[index] = option;
-
         document.querySelectorAll(`[data-variant-index="${index}"]`).forEach(el => el.classList.remove('bg-red-500', 'text-white'));
         optionElement.classList.add('bg-red-500', 'text-white');
-
         updateAvailableOptions(index);
         checkIfAllVariantsSelected();
     }
@@ -167,7 +162,6 @@
             }).join('');
         } else {
             let selectedVariant = filteredVariants.length > 0 ? filteredVariants[0] : null;
-
             if (selectedVariant) {
                 document.getElementById('variant_id').value = selectedVariant.id;
                 document.getElementById('variant_title').value = Object.values(selectedOptions).join(' - ');
@@ -182,7 +176,6 @@
                 }
             }
         }
-
         checkIfAllVariantsSelected();
     }
 
@@ -201,10 +194,17 @@
         }
     }
 
-
-
-
+    let isLoading = false;
+    
     function addToCart() {
+
+        let button = document.getElementById('addToCartBtn');
+        let originalText = button.innerHTML;
+        if (isLoading) return; 
+        button.innerHTML = "Adding...";
+        button.disabled = true;
+        isLoading = true;
+
     let variantId = document.getElementById('variant_id').value;
     let variantTitle = document.getElementById('variant_title').value;
     let titles = document.getElementById('justtitle').value;
@@ -213,57 +213,98 @@
     let quantity = parseInt(quantityInput.value);
     let stock = parseInt(document.getElementById('stock').value); 
     let quantityError = document.getElementById('quantityError');
-
-    // Reset error message
     quantityError.textContent = '';
-
     if (!variantId) {
         quantityError.textContent = 'Please select a variant before adding to cart.';
+        resetButton(button, originalText);
         return;
     }
 
     if (isNaN(quantity) || quantity <= 0) {
         quantityError.textContent = 'Please enter a valid quantity.';
+        resetButton(button, originalText);
         return;
     }
 
     if (quantity > stock) {
         quantityError.classList = 'text-red-600 text-sm mt-3';
         quantityError.textContent = `Out of stock! Available stock: ${stock}`;
+        resetButton(button, originalText);
         return;
     }
-
+    const notyf = new Notyf({
+        position: {
+            x: 'right', // Bisa 'left', 'center', atau 'right'
+            y: 'top'   // Bisa 'top' atau 'bottom'
+        }
+    });
+    
     fetch('/cart/add', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            variant_id: variantId,
-            title: titles + ' - ' + variantTitle,
-            image: img,
-            quantity: quantity
-        })
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    },
+    body: JSON.stringify({
+        variant_id: variantId,
+        title: titles + ' - ' + variantTitle,
+        image: img,
+        quantity: quantity
+    })
     })
     .then(response => response.json())
     .then(data => {
-        if (data.message === 'Added to cart') {
-            quantityError.textContent = ''; // Hapus error jika berhasil
-            alert('Item added to cart successfully!');
-            console.log('Updated Cart:', data.cart);
-        } else {
-            quantityError.classList = 'text-green-600 text-sm mt-3';
-            quantityError.textContent = 'Success add to cart.';
+        if (data.message) {
+            // alert(data.message); // Pastikan ini menampilkan pesan dari backend
+            notyf.open({
+            type: data.message.includes('Stock is not enough') ? 'error' : 'success',
+            message: data.message,
+            duration: 3000,
+            });
         }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+        console.error("Error:", error);
+        // alert("Something went wrong!");
+        notyf.error("Something went wrong!");
+    }).finally(() => {
+        resetButton(button, originalText);
+    });
+
+    // fetch('/cart/add', {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    //     },
+    //     body: JSON.stringify({
+    //         variant_id: variantId,
+    //         title: titles + ' - ' + variantTitle,
+    //         image: img,
+    //         quantity: quantity
+    //     })
+    // })
+    // .then(response => response.json())
+    // .then(data => {
+    //     if (data.message === 'Added to cart') {
+    //         quantityError.textContent = ''; // Hapus error jika berhasil
+    //         alert('Item added to cart successfully!');
+    //         console.log('Updated Cart:', data.cart);
+    //     } else {
+    //         quantityError.classList = 'text-green-600 text-sm mt-3';
+    //         quantityError.textContent = 'Success add to cart.';
+    //     }
+    // })
+    // .catch(error => console.error('Error:', error));
 }
 
 
-
-
-
-    
+function resetButton(button, originalText) {
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        isLoading = false; // Reset state loading
+    }, 1000);
+}
     renderVariantSelectors();
 </script>
